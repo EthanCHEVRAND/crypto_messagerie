@@ -21,7 +21,7 @@ def create_keys(name):
     pub = f"{n_pub}\n{e_pub}"
     priv = f"{n_priv}\n{d_priv}"
     
-    priv_path = os.path.join(folder, f"cle_privee_{name}")
+    priv_path = os.path.join(folder, f"cle_privee")
     pub_path  = os.path.join(folder, f"cle_publique_{name}.pub")
 
     with open(priv_path, "w") as f:
