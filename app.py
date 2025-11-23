@@ -1,5 +1,7 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
+from ttkthemes import ThemedTk
 import subprocess
 import sys
 import os
@@ -46,6 +48,9 @@ def key_creation():
 
 def message_crypting():
     global folders 
+    if folders["keys"] == None:
+        tk.messagebox.showerror("Erreur", "Veuillez rentrer le dossier des clés")
+        return
 
     message = text_box.get("1.0", tk.END).strip()
     if not message:
@@ -165,13 +170,14 @@ def open_folder(fold):
 def ask_distro():
     popup = tk.Toplevel()
     popup.title("Entrer la distro WSL")
+    popup.configure(bg="#000000")
     popup.geometry("300x120")
     popup.grab_set()
 
-    label = tk.Label(popup, text="Nom de la distro wsl :")
+    label = ttk.Label(popup, text="Nom de la distro wsl :")
     label.pack(pady=10)
 
-    entry = tk.Entry(popup, width=30)
+    entry = ttk.Entry(popup, width=30)
     entry.pack()
 
     def validate():
@@ -185,19 +191,20 @@ def ask_distro():
         tk.messagebox.showinfo("OK", f"Distro enregistrée : {distro_var}")
         popup.destroy()
 
-    button = tk.Button(popup, text="Valider", command=validate)
+    button = ttk.Button(popup, text="Valider", command=validate)
     button.pack(pady=10)
 
 def ask_name():
     popup = tk.Toplevel()
     popup.title("Entrer votre nom")
+    popup.configure(bg="#000000")
     popup.geometry("300x120")
     popup.grab_set()
 
-    label = tk.Label(popup, text="Nom :")
+    label = ttk.Label(popup, text="Nom :")
     label.pack(pady=10)
 
-    entry = tk.Entry(popup, width=30)
+    entry = ttk.Entry(popup, width=30)
     entry.pack()
 
     result = {"name": None}
@@ -213,46 +220,47 @@ def ask_name():
         result["name"] = name
         popup.destroy()
 
-    button = tk.Button(popup, text="Valider", command=validate)
+    button = ttk.Button(popup, text="Valider", command=validate)
     button.pack(pady=10)
 
     popup.wait_window()
     return result["name"]
 
-root = tk.Tk()
+root = ThemedTk(theme="equilux")
+root.configure(bg="#000000")
 
 root.title("Crypteur/Décrypteur")
 
-entry = tk.Entry(root, textvariable=folder_var, width=50)
+entry = ttk.Entry(root, textvariable=folder_var, width=50)
 
-distro_btn = tk.Button(root, text="Entrer la distro (wsl)", command=ask_distro)
+distro_btn = ttk.Button(root, text="Entrer la distro (wsl)", command=ask_distro)
 distro_btn.pack(pady=5)
 
-browse_btn = tk.Button(root, text="Parcourir dossier clés...", command=lambda: browse_folder("keys"))
+browse_btn = ttk.Button(root, text="Parcourir dossier clés...", command=lambda: browse_folder("keys"))
 browse_btn.pack(pady=5)
 
-open_btn = tk.Button(root, text="Ouvrir le dossier des clés", command=lambda: open_folder("keys"))
+open_btn = ttk.Button(root, text="Ouvrir le dossier des clés", command=lambda: open_folder("keys"))
 open_btn.pack(pady=5)
 
-browse_msg_btn = tk.Button(root, text="Parcourir dossier messages...", command=lambda: browse_folder("messages"))
+browse_msg_btn = ttk.Button(root, text="Parcourir dossier messages...", command=lambda: browse_folder("messages"))
 browse_msg_btn.pack(pady=5)
 
-open_msg_btn = tk.Button(root, text="Ouvrir le dossier des messages", command=lambda: open_folder("messages"))
+open_msg_btn = ttk.Button(root, text="Ouvrir le dossier des messages", command=lambda: open_folder("messages"))
 open_msg_btn.pack(pady=5)
 
-create_keys_btn = tk.Button(root, text="Creer une paire de clés RSA", command=lambda: create_keys())
+create_keys_btn = ttk.Button(root, text="Creer une paire de clés RSA", command=lambda: create_keys())
 create_keys_btn.pack(pady=5)
 
-text_box = tk.Text(root, width=40, height=5)
+text_box = tk.Text(root, width=40, height=5, bg="#2E2E2E", fg="white", insertbackground="white")
 text_box.pack(padx=10, pady=10)
 
-dest_box = tk.Text(root, width=40, height=5)
+dest_box = tk.Text(root, width=40, height=5, bg="#2E2E2E", fg="white", insertbackground="white")
 dest_box.pack(padx=10, pady=10)
 
-crypt = tk.Button(root, text="Crypter le message", command=lambda: message_crypting())
+crypt = ttk.Button(root, text="Crypter le message", command=lambda: message_crypting())
 crypt.pack(pady=5)
 
-decrypt = tk.Button(root, text="Décrypter un message", command=lambda: message_decrypting())
+decrypt = ttk.Button(root, text="Décrypter un message", command=lambda: message_decrypting())
 decrypt.pack(pady=5)
 
 root.mainloop()
