@@ -5,7 +5,7 @@ import sys
 import os
 from tools.crypto import *
 
-folders = {"keys": None, "messages": None}
+folders = {"keys": None, "messages": ""}
 folder_var = None
 distro_var = None
 
@@ -45,30 +45,42 @@ def key_creation():
     return 0
 
 def message_crypting():
-    message = input("Rentrez votre message >>> ")
-    dest = input("Qui est le destinataire ? >>> ")
+    global folders 
 
-    folder = "my_keys"
+    message = text_box.get("1.0", tk.END).strip()
+    if not message:
+        tk.messagebox.showerror("Erreur", "Veuillez rentrer un message")
+        return
+    
+    dest = dest_box.get("1.0", tk.END).strip()
+    if not dest:
+        tk.messagebox.showerror("Erreur", "Veuillez rentrer un destinataire")
+        return
+
+    folder = folders["keys"]
     with open(f"{folder}/cle_publique_{dest}.pub", "r") as f:
         lignes = f.read().splitlines()
 
     n = int(lignes[0])
     e = int(lignes[1])
 
-    print(n, e)
-
     C = ""
     for i in range(len(message)):
         C += str(codageRSA(ord(message[i]), n, e)) + "\n"
-    print(f"{C}")
 
-    f = create_file("message.txt", C)
+    msg_fold = folders["messages"]
+    if msg_fold != "":
+        msg_fold += "/"
+
+    f = create_file(f"{msg_fold}message.txt", C)
 
     return C
 
 def message_decrypting():
-    filename = input("Quel est le fichier à décrypter ? >>> ")
-    folder = "my_keys"
+    global folders
+    # filename = input("Quel est le fichier à décrypter ? >>> ")
+    filename = filedialog.askopenfilename()
+    folder = folders["keys"]
 
     with open(f"{folder}/cle_privee", "r") as f:
         lignes = f.read().splitlines()
@@ -82,7 +94,7 @@ def message_decrypting():
     for ligne in lignes:
         M += chr(decodageRSA(int(ligne), n, d))
 
-    print(M)
+    tk.messagebox.showinfo("OK", f"Message décrypté : {M}")
 
     return 0
 
@@ -230,5 +242,17 @@ open_msg_btn.pack(pady=5)
 
 create_keys_btn = tk.Button(root, text="Creer une paire de clés RSA", command=lambda: create_keys())
 create_keys_btn.pack(pady=5)
+
+text_box = tk.Text(root, width=40, height=5)
+text_box.pack(padx=10, pady=10)
+
+dest_box = tk.Text(root, width=40, height=5)
+dest_box.pack(padx=10, pady=10)
+
+crypt = tk.Button(root, text="Crypter le message", command=lambda: message_crypting())
+crypt.pack(pady=5)
+
+decrypt = tk.Button(root, text="Décrypter un message", command=lambda: message_decrypting())
+decrypt.pack(pady=5)
 
 root.mainloop()
