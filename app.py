@@ -4,8 +4,8 @@ import subprocess
 import sys
 import os
 from tools.crypto import *
-from tools.files import *
 
+folders = {"keys": None, "messages": None}
 folder_var = None
 distro_var = None
 
@@ -86,19 +86,59 @@ def message_decrypting():
 
     return 0
 
+def create_file(filename, content):
+    f = open(filename, "x")
+    
+    with open(filename, "w") as f:
+        f.write(content)
+
+    f = open(filename)
+    return f
+
+def create_keys():
+    global folders
+    
+    if folders["keys"] == None or folders["keys"] == "":
+        tk.messagebox.showerror("Erreur", "Entrer le dossier des clés")
+        return
+    folder = folders["keys"]
+
+    name = ask_name()
+
+    p, q, e = choixCle(100, 500)
+    n_priv, d_priv = clePublique(p, q, e)
+    n_pub, e_pub = clePrivee(p, q, e)
+
+    pub = f"{n_pub}\n{e_pub}"
+    priv = f"{n_priv}\n{d_priv}"
+    
+    priv_path = os.path.join(folder, f"cle_privee")
+    pub_path  = os.path.join(folder, f"cle_publique_{name}.pub")
+
+    with open(priv_path, "w") as f:
+        f.write(priv)
+
+    with open(pub_path, "w") as f:
+        f.write(pub)
+
+    priv_key = open(priv_path)
+    pub_key = open(pub_path)
+
+    return priv_key, pub_key
+
 # ---------- IHM ---------- #
 
-def browse_folder():
-    global folder_var
+def browse_folder(fold):
+    global folders
 
     folder_selected = filedialog.askdirectory()
     if folder_selected:
-        folder_var = folder_selected
+        folders[fold] = folder_selected
 
-def open_folder():
-    global folder_var
+def open_folder(fold):
+    global folders
     global distro_var
-    folder = folder_var
+    folder = folders[fold]
     distro = distro_var
     if not folder:
         return
@@ -136,19 +176,59 @@ def ask_distro():
     button = tk.Button(popup, text="Valider", command=validate)
     button.pack(pady=10)
 
+def ask_name():
+    popup = tk.Toplevel()
+    popup.title("Entrer votre nom")
+    popup.geometry("300x120")
+    popup.grab_set()
+
+    label = tk.Label(popup, text="Nom :")
+    label.pack(pady=10)
+
+    entry = tk.Entry(popup, width=30)
+    entry.pack()
+
+    result = {"name": None}
+
+    def validate():
+        name = entry.get().strip()
+
+        if name == "" or name == None:
+            tk.messagebox.showerror("Erreur", "Veuillez entrer un nom")
+            return
+
+        tk.messagebox.showinfo("OK", f"Nom enregistré : {name}")
+        result["name"] = name
+        popup.destroy()
+
+    button = tk.Button(popup, text="Valider", command=validate)
+    button.pack(pady=10)
+
+    popup.wait_window()
+    return result["name"]
+
 root = tk.Tk()
 
 root.title("Crypteur/Décrypteur")
 
 entry = tk.Entry(root, textvariable=folder_var, width=50)
+
 distro_btn = tk.Button(root, text="Entrer la distro (wsl)", command=ask_distro)
 distro_btn.pack(pady=5)
-browse_btn = tk.Button(root, text="Parcourir...", command=browse_folder)
+
+browse_btn = tk.Button(root, text="Parcourir dossier clés...", command=lambda: browse_folder("keys"))
 browse_btn.pack(pady=5)
-open_btn = tk.Button(root, text="Ouvrir le dossier", command=open_folder)
+
+open_btn = tk.Button(root, text="Ouvrir le dossier des clés", command=lambda: open_folder("keys"))
 open_btn.pack(pady=5)
 
-root.mainloop()
+browse_msg_btn = tk.Button(root, text="Parcourir dossier messages...", command=lambda: browse_folder("messages"))
+browse_msg_btn.pack(pady=5)
 
-if __name__ == "__main__":
-    main()
+open_msg_btn = tk.Button(root, text="Ouvrir le dossier des messages", command=lambda: open_folder("messages"))
+open_msg_btn.pack(pady=5)
+
+create_keys_btn = tk.Button(root, text="Creer une paire de clés RSA", command=lambda: create_keys())
+create_keys_btn.pack(pady=5)
+
+root.mainloop()
